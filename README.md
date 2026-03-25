@@ -21,7 +21,7 @@ The package contributes a Pi extension via `package.json#pi.extensions` and expe
 ## Included Pi Tools
 
 - `toolflow_registry`
-- `toolflow_pipe`
+- `toolflow_run`
 - `toolflow_flox_search_packages`
 - `toolflow_flox_run_command`
 - `toolflow_nixos_nix`
@@ -29,4 +29,3 @@ The package contributes a Pi extension via `package.json#pi.extensions` and expe
 ## Runtime
 
 The extension talks to the installed `toolflow` binary over MCP stdio. In this workspace that usually comes from `nixpkg-toolflow-mcp` via Flox.
-
