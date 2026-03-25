@@ -12,10 +12,23 @@ const DEFAULT_LOCAL_TOOLFLOW_ROOT = resolve(REPO_ROOT, "..", "toolflow-mcp");
 const DEFAULT_LOCAL_CONFIG_PATH = resolve(DEFAULT_LOCAL_TOOLFLOW_ROOT, "toolflow.config.json");
 const DEFAULT_LOCAL_SECRETS_PATH = resolve(DEFAULT_LOCAL_TOOLFLOW_ROOT, "toolflow.secrets.json");
 
+function resolvePackagedToolflowRoot(): string | null {
+  const toolflowPath = Bun.which(TOOLFLOW_COMMAND);
+  if (!toolflowPath) return null;
+  return resolve(dirname(toolflowPath), "..", "share", "toolflow");
+}
+
 function resolveToolflowEnv(): Record<string, string> | undefined {
   const env: Record<string, string> = {};
-  const configPath = process.env.TOOLFLOW_CONFIG || (existsSync(DEFAULT_LOCAL_CONFIG_PATH) ? DEFAULT_LOCAL_CONFIG_PATH : "");
-  const secretsPath = process.env.TOOLFLOW_SECRETS || (existsSync(DEFAULT_LOCAL_SECRETS_PATH) ? DEFAULT_LOCAL_SECRETS_PATH : "");
+  const packagedRoot = resolvePackagedToolflowRoot();
+  const packagedConfigPath = packagedRoot ? resolve(packagedRoot, "toolflow.config.json") : "";
+  const packagedSecretsPath = packagedRoot ? resolve(packagedRoot, "toolflow.secrets.json") : "";
+  const configPath =
+    process.env.TOOLFLOW_CONFIG ||
+    (existsSync(DEFAULT_LOCAL_CONFIG_PATH) ? DEFAULT_LOCAL_CONFIG_PATH : existsSync(packagedConfigPath) ? packagedConfigPath : "");
+  const secretsPath =
+    process.env.TOOLFLOW_SECRETS ||
+    (existsSync(DEFAULT_LOCAL_SECRETS_PATH) ? DEFAULT_LOCAL_SECRETS_PATH : existsSync(packagedSecretsPath) ? packagedSecretsPath : "");
 
   if (configPath) env.TOOLFLOW_CONFIG = configPath;
   if (secretsPath) env.TOOLFLOW_SECRETS = secretsPath;
