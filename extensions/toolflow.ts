@@ -40,10 +40,6 @@ const ToolflowPipeParams = Type.Object({
   flow: Type.String({ description: "Toolflow flow expression" }),
 });
 
-const ToolflowJsonArgsParams = Type.Object({
-  arguments_json: Type.String({ description: "JSON object arguments serialized as a string" }),
-});
-
 type ToolResponse = {
   content: Array<{ type: "text"; text: string }>;
   details: Record<string, unknown>;
@@ -57,7 +53,7 @@ async function getClient(): Promise<Client> {
   _clientPromise = (async () => {
     const client = new Client({
       name: "pi-toolflow",
-      version: "0.1.0",
+      version: "0.2.0",
     });
     _transport = new StdioClientTransport({
       command: TOOLFLOW_COMMAND,
@@ -105,25 +101,7 @@ async function callTool(toolName: string, args: Record<string, unknown>): Promis
   };
 }
 
-function parseJsonObject(raw: string): Record<string, unknown> {
-  const parsed = JSON.parse(raw) as unknown;
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("arguments_json must decode to a JSON object");
-  }
-  return parsed as Record<string, unknown>;
-}
-
 function registerToolflowTools(pi: any) {
-  pi.registerTool({
-    name: "toolflow_registry",
-    label: "Toolflow Registry",
-    description: "List verbs and direct tools currently exposed by the installed toolflow runtime.",
-    parameters: Type.Object({}),
-    async execute() {
-      return await callTool("toolflow_registry", {});
-    },
-  });
-
   pi.registerTool({
     name: "toolflow",
     label: "Toolflow",
@@ -133,40 +111,30 @@ function registerToolflowTools(pi: any) {
       return await callTool("toolflow", { flow: params.flow });
     },
   });
-
-  pi.registerTool({
-    name: "toolflow_flox_search_packages",
-    label: "Toolflow Flox Search",
-    description: "Search Flox packages through toolflow's Flox bridge.",
-    parameters: ToolflowJsonArgsParams,
-    async execute(_toolCallId: string, params: { arguments_json: string }) {
-      return await callTool("flox_search_packages", { arguments_json: params.arguments_json });
-    },
-  });
-
-  pi.registerTool({
-    name: "toolflow_flox_run_command",
-    label: "Toolflow Flox Run",
-    description: "Run a command inside a Flox environment through toolflow's Flox bridge.",
-    parameters: ToolflowJsonArgsParams,
-    async execute(_toolCallId: string, params: { arguments_json: string }) {
-      return await callTool("flox_run_command", { arguments_json: params.arguments_json });
-    },
-  });
-
-  pi.registerTool({
-    name: "toolflow_nixos_nix",
-    label: "Toolflow NixOS Query",
-    description: "Run the main NixOS MCP query tool through toolflow's NixOS bridge.",
-    parameters: ToolflowJsonArgsParams,
-    async execute(_toolCallId: string, params: { arguments_json: string }) {
-      return await callTool("nixos_nix", { arguments_json: params.arguments_json });
-    },
-  });
 }
 
 export default function piToolflowExtension(pi: any): void {
   registerToolflowTools(pi);
+
+  async function runCommand(subcommand: string, ctx: any) {
+    const proc = Bun.spawnSync([TOOLFLOW_COMMAND, subcommand, "--json"], {
+      env: {
+        ...process.env,
+        ...(resolveToolflowEnv() ?? {}),
+      },
+      stderr: "pipe",
+      stdout: "pipe",
+    });
+    const stdout = proc.stdout.toString().trim();
+    const stderr = proc.stderr.toString().trim();
+    const content = stdout.length > 0 ? stdout : stderr || `${TOOLFLOW_COMMAND} ${subcommand} returned no output`;
+    pi.sendMessage({
+      customType: `pi-toolflow-${subcommand}`,
+      content,
+      display: true,
+    });
+    ctx?.ui?.notify?.(`toolflow ${subcommand}`, proc.exitCode === 0 ? "info" : "error");
+  }
 
   pi.registerCommand("toolflow-help", {
     description: "Show available pi-toolflow commands and examples",
@@ -175,12 +143,13 @@ export default function piToolflowExtension(pi: any): void {
         "## pi-toolflow",
         "",
         `- Runtime command: \`${TOOLFLOW_COMMAND}\``,
-        "- Tools:",
-        "  - toolflow_registry",
+        "- MCP tool:",
         "  - toolflow",
-        "  - toolflow_flox_search_packages",
-        "  - toolflow_flox_run_command",
-        "  - toolflow_nixos_nix",
+        "- Slash commands:",
+        "  - /toolflow-registry",
+        "  - /toolflow-status",
+        "  - /toolflow-doctor",
+        "  - /toolflow-help",
         "",
         "- Example pipeline:",
         "  toolflow with flow:",
@@ -200,6 +169,27 @@ export default function piToolflowExtension(pi: any): void {
         content: lines.join("\n"),
         display: true,
       });
+    },
+  });
+
+  pi.registerCommand("toolflow-registry", {
+    description: "Show Toolflow flow verbs and loaded plugins",
+    handler: async (_args: string, ctx: any) => {
+      await runCommand("registry", ctx);
+    },
+  });
+
+  pi.registerCommand("toolflow-status", {
+    description: "Show Toolflow runtime status",
+    handler: async (_args: string, ctx: any) => {
+      await runCommand("status", ctx);
+    },
+  });
+
+  pi.registerCommand("toolflow-doctor", {
+    description: "Run Toolflow runtime checks",
+    handler: async (_args: string, ctx: any) => {
+      await runCommand("doctor", ctx);
     },
   });
 

@@ -14,17 +14,13 @@ The package contributes a Pi extension via `package.json#pi.extensions` and expe
 
 ## Current Scope
 
-- Exposes Pi tools that call `toolflow` over stdio
-- Provides a lightweight `/toolflow-help` slash command
+- Exposes a single Pi tool that calls `toolflow` over stdio
+- Provides `/toolflow-registry`, `/toolflow-status`, `/toolflow-doctor`, and `/toolflow-help`
 - Keeps Pi-specific UX separate from `toolflow-mcp` runtime and `nixpkg-toolflow-mcp` packaging
 
 ## Included Pi Tools
 
-- `toolflow_registry`
 - `toolflow`
-- `toolflow_flox_search_packages`
-- `toolflow_flox_run_command`
-- `toolflow_nixos_nix`
 
 ## Runtime
 

@@ -10,8 +10,8 @@ Use this skill when working inside Pi sessions that need access to the shared `t
 ## What It Provides
 
 - A Pi-facing package and extension install surface
-- Pi tools for `toolflow_registry`, `toolflow`, and selected Flox/NixOS bridge calls
-- A `/toolflow-help` slash command for quick usage reminders
+- A single Pi tool, `toolflow`, for running flows
+- Slash commands for `/toolflow-registry`, `/toolflow-status`, `/toolflow-doctor`, and `/toolflow-help`
 
 ## Assumptions
 
@@ -21,4 +21,4 @@ Use this skill when working inside Pi sessions that need access to the shared `t
 ## Examples
 
 - `toolflow` with `flox.search_packages '{"search_term":"bun","limit":3}'`
-- `toolflow_nixos_nix` with `{"action":"search","source":"nixos","type":"packages","query":"ripgrep","limit":3}`
+- `toolflow` with `nixos.nix '{"action":"search","source":"nixos","type":"packages","query":"ripgrep","limit":3}'`
