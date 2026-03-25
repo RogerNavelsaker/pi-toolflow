@@ -37,7 +37,7 @@ function resolveToolflowEnv(): Record<string, string> | undefined {
 }
 
 const ToolflowPipeParams = Type.Object({
-  script: Type.String({ description: "Toolflow pipeline script" }),
+  flow: Type.String({ description: "Toolflow flow expression" }),
 });
 
 const ToolflowJsonArgsParams = Type.Object({
@@ -125,12 +125,12 @@ function registerToolflowTools(pi: any) {
   });
 
   pi.registerTool({
-    name: "toolflow_run",
-    label: "Toolflow Run",
-    description: "Run a Toolflow pipeline script through the installed MCP runtime.",
+    name: "toolflow",
+    label: "Toolflow",
+    description: "Run a Toolflow flow through the installed MCP runtime.",
     parameters: ToolflowPipeParams,
-    async execute(_toolCallId: string, params: { script: string }) {
-      return await callTool("toolflow_run", { script: params.script });
+    async execute(_toolCallId: string, params: { flow: string }) {
+      return await callTool("toolflow", { flow: params.flow });
     },
   });
 
@@ -177,13 +177,13 @@ export default function piToolflowExtension(pi: any): void {
         `- Runtime command: \`${TOOLFLOW_COMMAND}\``,
         "- Tools:",
         "  - toolflow_registry",
-        "  - toolflow_run",
+        "  - toolflow",
         "  - toolflow_flox_search_packages",
         "  - toolflow_flox_run_command",
         "  - toolflow_nixos_nix",
         "",
         "- Example pipeline:",
-        "  toolflow_run with script:",
+        "  toolflow with flow:",
         "  flox.search_packages '{\"search_term\":\"bun\",\"limit\":3}'",
         "",
         "- Config overrides:",

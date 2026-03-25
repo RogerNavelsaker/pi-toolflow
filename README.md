@@ -21,7 +21,7 @@ The package contributes a Pi extension via `package.json#pi.extensions` and expe
 ## Included Pi Tools
 
 - `toolflow_registry`
-- `toolflow_run`
+- `toolflow`
 - `toolflow_flox_search_packages`
 - `toolflow_flox_run_command`
 - `toolflow_nixos_nix`
