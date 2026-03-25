@@ -1,3 +1,8 @@
+---
+name: toolflow
+description: Use the shared toolflow runtime from Pi for pipeline execution, registry inspection, and selected Flox and NixOS bridge calls.
+---
+
 # pi-toolflow
 
 Use this skill when working inside Pi sessions that need access to the shared `toolflow` runtime.
