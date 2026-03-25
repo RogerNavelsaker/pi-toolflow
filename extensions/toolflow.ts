@@ -1,8 +1,27 @@
 import { Type } from "@sinclair/typebox";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const TOOLFLOW_COMMAND = process.env.TOOLFLOW_COMMAND || "toolflow";
+const EXTENSION_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(EXTENSION_DIR, "..");
+const DEFAULT_LOCAL_TOOLFLOW_ROOT = resolve(REPO_ROOT, "..", "toolflow-mcp");
+const DEFAULT_LOCAL_CONFIG_PATH = resolve(DEFAULT_LOCAL_TOOLFLOW_ROOT, "toolflow.config.json");
+const DEFAULT_LOCAL_SECRETS_PATH = resolve(DEFAULT_LOCAL_TOOLFLOW_ROOT, "toolflow.secrets.json");
+
+function resolveToolflowEnv(): Record<string, string> | undefined {
+  const env: Record<string, string> = {};
+  const configPath = process.env.TOOLFLOW_CONFIG || (existsSync(DEFAULT_LOCAL_CONFIG_PATH) ? DEFAULT_LOCAL_CONFIG_PATH : "");
+  const secretsPath = process.env.TOOLFLOW_SECRETS || (existsSync(DEFAULT_LOCAL_SECRETS_PATH) ? DEFAULT_LOCAL_SECRETS_PATH : "");
+
+  if (configPath) env.TOOLFLOW_CONFIG = configPath;
+  if (secretsPath) env.TOOLFLOW_SECRETS = secretsPath;
+
+  return Object.keys(env).length > 0 ? env : undefined;
+}
 
 const ToolflowPipeParams = Type.Object({
   script: Type.String({ description: "Toolflow railway_pipe script" }),
@@ -29,6 +48,7 @@ async function getClient(): Promise<Client> {
     });
     _transport = new StdioClientTransport({
       command: TOOLFLOW_COMMAND,
+      env: resolveToolflowEnv(),
       stderr: "inherit",
     });
     await client.connect(_transport);
@@ -152,6 +172,10 @@ export default function piToolflowExtension(pi: any): void {
         "- Example pipe:",
         "  toolflow_pipe with script:",
         "  flox.search_packages '{\"search_term\":\"bun\",\"limit\":3}'",
+        "",
+        "- Config overrides:",
+        "  TOOLFLOW_CONFIG=/path/to/toolflow.config.json",
+        "  TOOLFLOW_SECRETS=/path/to/toolflow.secrets.json",
         "",
         "- Example NixOS query:",
         "  toolflow_nixos_nix with:",
