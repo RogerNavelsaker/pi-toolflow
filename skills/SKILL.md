@@ -1,6 +1,6 @@
 ---
 name: toolflow
-description: Use the shared toolflow runtime from Pi for pipeline execution, registry inspection, and selected Flox and NixOS bridge calls.
+description: Use the shared toolflow runtime from Pi for pipeline execution, registry inspection, and selected NixOS bridge calls.
 ---
 
 # pi-toolflow
@@ -20,5 +20,4 @@ Use this skill when working inside Pi sessions that need access to the shared `t
 
 ## Examples
 
-- `toolflow` with `flox.search_packages '{"search_term":"bun","limit":3}'`
 - `toolflow` with `nixos.nix '{"action":"search","source":"nixos","type":"packages","query":"ripgrep","limit":3}'`

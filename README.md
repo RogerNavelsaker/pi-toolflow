@@ -2,7 +2,7 @@
 
 Pi-facing extension package for `toolflow`.
 
-This repo is the `pi install` surface. It owns Pi-specific package metadata and the install surface for `pi-coding-agent`. It does not own the `toolflow` MCP runtime packaging or the Nix/Flox packaging.
+This repo is the `pi install` surface. It owns Pi-specific package metadata and the install surface for `pi-coding-agent`. It does not own the `toolflow` MCP runtime packaging.
 
 ## Install
 
@@ -24,4 +24,4 @@ The package contributes a Pi extension via `package.json#pi.extensions` and expe
 
 ## Runtime
 
-The extension talks to the installed `toolflow` binary over MCP stdio. In this workspace that usually comes from `nixpkg-toolflow-mcp` via Flox.
+The extension talks to the installed `toolflow` binary over MCP stdio. In this workspace, install it from `nixpkg-toolflow-mcp` with Nix or include it in a devenv environment.
